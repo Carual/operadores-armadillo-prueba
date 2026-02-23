@@ -1,0 +1,828 @@
+<!doctype html>
+<html lang="es">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Logística — Panel (Items / Events / Dispatches)</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --card: #101833;
+      --muted: #aab3d0;
+      --text: #eef1ff;
+      --line: #23315b;
+      --ok: #22c55e;
+      --bad: #ef4444;
+      --warn: #f59e0b;
+      --panel: rgba(16, 24, 51, .70);
+      --panel2: rgba(11, 19, 47, .70);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: linear-gradient(180deg, #070a14, var(--bg));
+      color: var(--text);
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      border-bottom: 1px solid var(--line);
+      background: rgba(7, 10, 20, .88);
+      backdrop-filter: blur(10px);
+    }
+
+    .wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 18px;
+      letter-spacing: .2px;
+    }
+
+    .sub {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .topbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+      margin-top: 12px;
+    }
+
+    .pill {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(35, 49, 91, .9);
+      background: rgba(11, 19, 47, .55);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tab {
+      padding: 9px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(35, 49, 91, .9);
+      background: rgba(11, 19, 47, .55);
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .tab.active {
+      background: rgba(35, 49, 91, .55);
+      color: var(--text);
+      border-color: #6f86e9;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .hdr {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .hdr .title {
+      font-size: 14px;
+    }
+
+    .hdr .hint {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .body {
+      padding: 14px;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    @media (max-width: 980px) {
+      .row {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .box {
+      background: var(--panel2);
+      border: 1px solid rgba(35, 49, 91, .8);
+      border-radius: 14px;
+      padding: 12px;
+    }
+
+    .box h3 {
+      margin: 0 0 10px;
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .f {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .f input,
+    .f textarea,
+    .f select {
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(35, 49, 91, .9);
+      background: #09102a;
+      color: var(--text);
+      outline: none;
+      font-size: 14px;
+    }
+
+    .f textarea {
+      min-height: 92px;
+      resize: vertical;
+    }
+
+    .btnrow {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      padding: 10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(35, 49, 91, .9);
+      background: #0b132f;
+      color: var(--text);
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    button.primary {
+      border-color: #6f86e9;
+    }
+
+    button.ghost {
+      background: transparent;
+    }
+
+    button:hover {
+      border-color: #93a6ff;
+    }
+
+    .status {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .ok {
+      color: var(--ok);
+    }
+
+    .bad {
+      color: var(--bad);
+    }
+
+    .warn {
+      color: var(--warn);
+    }
+
+    .viewtabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .viewtab {
+      padding: 7px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(35, 49, 91, .9);
+      background: rgba(11, 19, 47, .55);
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 12px;
+    }
+
+    .viewtab.active {
+      background: rgba(35, 49, 91, .55);
+      color: var(--text);
+      border-color: #6f86e9;
+    }
+
+    pre {
+      margin: 0;
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(35, 49, 91, .9);
+      background: #070b1c;
+      overflow: auto;
+      max-height: 560px;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      overflow: hidden;
+      border-radius: 14px;
+      border: 1px solid rgba(35, 49, 91, .9);
+    }
+
+    thead th {
+      text-align: left;
+      font-size: 12px;
+      color: var(--muted);
+      padding: 10px 10px;
+      background: rgba(11, 19, 47, .75);
+      border-bottom: 1px solid rgba(35, 49, 91, .9);
+      position: sticky;
+      top: 0;
+    }
+
+    tbody td {
+      padding: 10px 10px;
+      border-bottom: 1px solid rgba(35, 49, 91, .55);
+      font-size: 13px;
+      vertical-align: top;
+    }
+
+    tbody tr:hover td {
+      background: rgba(35, 49, 91, .22);
+    }
+
+    .scroll {
+      max-height: 560px;
+      overflow: auto;
+      border-radius: 14px;
+    }
+
+    .small {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .kbd {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      color: var(--muted);
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="wrap">
+      <h1>Panel de Logística</h1>
+      <div class="sub">Elige qué quieres gestionar: <b>Items</b>, <b>Events</b> o <b>Dispatches</b>. En cada sección
+        puedes hacer GET y POST, y ver los datos en tabla o JSON. (La API usa el mismo dominio).</div>
+
+      <div class="topbar">
+        <div class="tabs">
+          <div class="tab active" data-section="items">Items</div>
+          <div class="tab" data-section="events">Events</div>
+          <div class="tab" data-section="dispatches">Dispatches</div>
+        </div>
+        <span class="pill">API: <span class="kbd">same origin</span></span>
+        <span class="pill">Tip: IDs se copian desde la tabla</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="grid">
+
+      <!-- ===================== ITEMS ===================== -->
+      <section class="card" id="sec_items">
+        <div class="hdr">
+          <div>
+            <div class="title">Items</div>
+            <div class="hint">Ver items, filtrar por estado y crear items nuevos.</div>
+          </div>
+          <span class="pill" id="kpi_items">Items: —</span>
+        </div>
+        <div class="body">
+          <div class="row">
+            <div class="box">
+              <h3>GET Items</h3>
+              <div class="f">
+                <select id="items_state">
+                  <option value="">Todos</option>
+                  <option value="IN_WAREHOUSE">En bodega (IN_WAREHOUSE)</option>
+                  <option value="CHECKED_OUT">Despachados (CHECKED_OUT)</option>
+                </select>
+                <div class="btnrow">
+                  <button class="primary" id="btn_items_get">Cargar items</button>
+                  <button class="ghost" id="btn_items_refresh">Refrescar KPIs</button>
+                </div>
+                <div class="status" id="items_status"></div>
+              </div>
+            </div>
+
+            <div class="box">
+              <h3>POST Create Item</h3>
+              <div class="f">
+                <input id="item_type_id" placeholder="resource_type_id (ej: 1)" />
+                <input id="item_code" placeholder="code (ej: RAD-999)" />
+                <textarea id="item_notes" placeholder="notes (opcional)"></textarea>
+                <button class="primary" id="btn_items_post">Crear item</button>
+                <div class="status" id="item_post_status"></div>
+              </div>
+            </div>
+          </div>
+
+          <div style="height:12px;"></div>
+
+          <div class="box">
+            <h3>Resultado</h3>
+            <div class="viewtabs">
+              <div class="viewtab active" data-view="items_table">Tabla</div>
+              <div class="viewtab" data-view="items_json">JSON</div>
+            </div>
+
+            <div id="items_table" class="scroll"></div>
+            <pre id="items_json" class="hidden">[]</pre>
+
+            <div class="small" style="margin-top:10px;">
+              Tip: haz click en un ID de la tabla para copiarlo.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== EVENTS ===================== -->
+      <section class="card hidden" id="sec_events">
+        <div class="hdr">
+          <div>
+            <div class="title">Events</div>
+            <div class="hint">Ver eventos y crear eventos nuevos.</div>
+          </div>
+          <span class="pill" id="kpi_events">Events: —</span>
+        </div>
+        <div class="body">
+          <div class="row">
+            <div class="box">
+              <h3>GET Events</h3>
+              <div class="f">
+                <div class="btnrow">
+                  <button class="primary" id="btn_events_get">Cargar events</button>
+                </div>
+                <div class="status" id="events_status"></div>
+              </div>
+            </div>
+
+            <div class="box">
+              <h3>POST Create Event</h3>
+              <div class="f">
+                <input id="ev_name" placeholder="name (ej: Concierto...)" />
+                <input id="ev_date" placeholder="event_date (YYYY-MM-DD)" />
+                <input id="ev_loc" placeholder="location (ej: Lumen Field)" />
+                <textarea id="ev_notes" placeholder="notes (opcional)"></textarea>
+                <button class="primary" id="btn_events_post">Crear event</button>
+                <div class="status" id="event_post_status"></div>
+              </div>
+            </div>
+          </div>
+
+          <div style="height:12px;"></div>
+
+          <div class="box">
+            <h3>Resultado</h3>
+            <div class="viewtabs">
+              <div class="viewtab active" data-view="events_table">Tabla</div>
+              <div class="viewtab" data-view="events_json">JSON</div>
+            </div>
+
+            <div id="events_table" class="scroll"></div>
+            <pre id="events_json" class="hidden">[]</pre>
+
+            <div class="small" style="margin-top:10px;">
+              Tip: copia IDs de events para crear dispatches con <span class="kbd">event_ids</span>.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===================== DISPATCHES ===================== -->
+      <section class="card hidden" id="sec_dispatches">
+        <div class="hdr">
+          <div>
+            <div class="title">Dispatches</div>
+            <div class="hint">Ver dispatches, crear dispatch y retornar dispatch.</div>
+          </div>
+          <span class="pill" id="kpi_open">Open: —</span>
+        </div>
+        <div class="body">
+          <div class="row">
+            <div class="box">
+              <h3>GET Dispatches</h3>
+              <div class="f">
+                <select id="disp_open_only">
+                  <option value="false">Todos</option>
+                  <option value="true">Solo abiertos (open_only=true)</option>
+                </select>
+                <div class="btnrow">
+                  <button class="primary" id="btn_disp_get">Cargar dispatches</button>
+                </div>
+                <div class="status" id="disp_status"></div>
+              </div>
+            </div>
+
+            <div class="box">
+              <h3>POST Create Dispatch</h3>
+              <div class="f">
+                <input id="d_item_id" placeholder="resource_item_id (ej: 1)" />
+                <input id="d_event_ids" placeholder="event_ids (opcional) ej: 2,3" />
+                <input id="d_dispatched_at" placeholder="dispatched_at (opcional ISO) ej: 2026-04-17T18:00:00Z" />
+                <textarea id="d_note" placeholder="dispatch_note (opcional)"></textarea>
+                <button class="primary" id="btn_disp_post">Crear dispatch</button>
+                <div class="status" id="disp_post_status"></div>
+              </div>
+            </div>
+          </div>
+
+          <div style="height:12px;"></div>
+
+          <div class="row">
+            <div class="box">
+              <h3>POST Return Dispatch</h3>
+              <div class="f">
+                <input id="r_dispatch_id" placeholder="dispatch_id (ej: 10)" />
+                <input id="r_returned_at" placeholder="returned_at (opcional ISO) ej: 2026-04-19T20:00:00Z" />
+                <textarea id="r_note" placeholder="return_note (opcional)"></textarea>
+                <button class="primary" id="btn_disp_return">Retornar dispatch</button>
+                <div class="status" id="disp_return_status"></div>
+              </div>
+            </div>
+
+            <div class="box">
+              <h3>Resultado (acciones)</h3>
+              <pre id="disp_action_out">{}</pre>
+              <div class="small" style="margin-top:10px;">
+                Tip: en la tabla de dispatches, haz click en <b>dispatch_id</b> para copiarlo aquí.
+              </div>
+            </div>
+          </div>
+
+          <div style="height:12px;"></div>
+
+          <div class="box">
+            <h3>Listado</h3>
+            <div class="viewtabs">
+              <div class="viewtab active" data-view="disp_table">Tabla</div>
+              <div class="viewtab" data-view="disp_json">JSON</div>
+            </div>
+
+            <div id="disp_table" class="scroll"></div>
+            <pre id="disp_json" class="hidden">[]</pre>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    // -------- helpers
+    function pretty(x) { return JSON.stringify(x, null, 2); }
+    function setStatus(el, kind, msg) {
+      el.className = "status " + (kind || "");
+      el.textContent = msg || "";
+    }
+    async function api(path, { method = "GET", body = null } = {}) {
+      const opts = { method, headers: { "Accept": "application/json" } };
+      if (body !== null) {
+        opts.headers["Content-Type"] = "application/json";
+        opts.body = JSON.stringify(body);
+      }
+      const res = await fetch(path, opts);
+      const text = await res.text();
+      let data;
+      try { data = text ? JSON.parse(text) : null; }
+      catch { data = { raw: text }; }
+      return { ok: res.ok, status: res.status, data };
+    }
+    async function copyText(txt) {
+      try { await navigator.clipboard.writeText(String(txt)); return true; }
+      catch { return false; }
+    }
+    function esc(s) {
+      return String(s ?? "").replace(/[&<>"']/g, m => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
+    }
+
+    // -------- tabs: sections
+    const sections = ["items", "events", "dispatches"];
+    document.querySelectorAll(".tab").forEach(tab => {
+      tab.addEventListener("click", () => {
+        document.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
+        tab.classList.add("active");
+        sections.forEach(s => $("sec_" + s).classList.add("hidden"));
+        $("sec_" + tab.dataset.section).classList.remove("hidden");
+      });
+    });
+
+    // -------- view tabs (table/json) per section
+    function wireViewTabs(scopeEl) {
+      const tabs = scopeEl.querySelectorAll(".viewtab");
+      tabs.forEach(t => {
+        t.addEventListener("click", () => {
+          tabs.forEach(x => x.classList.remove("active"));
+          t.classList.add("active");
+
+          const viewId = t.dataset.view;
+          // hide all views in same box
+          const box = t.closest(".box");
+          box.querySelectorAll(".scroll, pre").forEach(el => el.classList.add("hidden"));
+          $(viewId).classList.remove("hidden");
+        });
+      });
+    }
+    document.querySelectorAll(".card").forEach(card => wireViewTabs(card));
+
+    // -------- table renderer (simple + copy-on-click for ID columns)
+    function renderTable(containerEl, rows, columns, { copyKeys = [] } = {}) {
+      if (!Array.isArray(rows)) rows = [];
+      const thead = `<thead><tr>${columns.map(c => `<th>${esc(c.label)}</th>`).join("")}</tr></thead>`;
+      const tbody = rows.map(r => {
+        return `<tr>${columns.map(c => {
+          const v = c.get ? c.get(r) : r[c.key];
+          const raw = (v === null || v === undefined) ? "" : v;
+          const show = (typeof raw === "object") ? esc(JSON.stringify(raw)) : esc(raw);
+          const isCopy = copyKeys.includes(c.key);
+          return `<td ${isCopy ? `data-copy="${esc(raw)}" style="cursor:pointer"` : ""}>${show}</td>`;
+        }).join("")}</tr>`;
+      }).join("");
+
+      containerEl.innerHTML = `<table>${thead}<tbody>${tbody}</tbody></table>`;
+
+      // copy handlers
+      containerEl.querySelectorAll("[data-copy]").forEach(td => {
+        td.addEventListener("click", async () => {
+          const val = td.getAttribute("data-copy");
+          const ok = await copyText(val);
+          td.style.outline = ok ? "2px solid rgba(34,197,94,.6)" : "2px solid rgba(239,68,68,.6)";
+          setTimeout(() => td.style.outline = "none", 650);
+        });
+      });
+    }
+
+    // -------- KPIs
+    async function refreshKPIs() {
+      try {
+        const items = await api("/items");
+        if (items.ok && Array.isArray(items.data)) $("kpi_items").textContent = `Items: ${items.data.length}`;
+
+        const events = await api("/events");
+        if (events.ok && Array.isArray(events.data)) $("kpi_events").textContent = `Events: ${events.data.length}`;
+
+        const open = await api("/dispatches?open_only=true");
+        if (open.ok && Array.isArray(open.data)) $("kpi_open").textContent = `Open: ${open.data.length}`;
+      } catch { }
+    }
+
+    // ===================== ITEMS: GET + POST =====================
+    let lastItems = [];
+
+    $("btn_items_get").addEventListener("click", async () => {
+      setStatus($("items_status"), "", "Cargando...");
+      try {
+        const state = $("items_state").value.trim();
+        const path = state ? `/items?state=${encodeURIComponent(state)}` : "/items";
+        const r = await api(path);
+        setStatus($("items_status"), r.ok ? "ok" : "bad", `HTTP ${r.status}`);
+        $("items_json").textContent = pretty(r.data);
+
+        lastItems = Array.isArray(r.data) ? r.data : [];
+        renderTable($("items_table"), lastItems, [
+          { key: "id", label: "ID" },
+          { key: "code", label: "Code" },
+          { key: "current_state", label: "State" },
+          { key: "resource_type_id", label: "Type ID" },
+          { key: "notes", label: "Notes" }
+        ], { copyKeys: ["id"] });
+
+        await refreshKPIs();
+      } catch (e) {
+        setStatus($("items_status"), "bad", String(e.message || e));
+        $("items_json").textContent = pretty({ error: String(e.message || e) });
+        $("items_table").innerHTML = "";
+      }
+    });
+
+    $("btn_items_post").addEventListener("click", async () => {
+      setStatus($("item_post_status"), "", "Enviando...");
+      try {
+        const typeId = Number($("item_type_id").value);
+        const code = $("item_code").value.trim();
+        if (!Number.isFinite(typeId) || typeId <= 0) throw new Error("resource_type_id debe ser número");
+        if (!code) throw new Error("code es obligatorio");
+
+        const body = { resource_type_id: typeId, code, notes: $("item_notes").value || null };
+        const r = await api("/items", { method: "POST", body });
+        setStatus($("item_post_status"), r.ok ? "ok" : "bad", `HTTP ${r.status}`);
+        // after create, reload items to show it
+        $("btn_items_get").click();
+      } catch (e) {
+        setStatus($("item_post_status"), "bad", String(e.message || e));
+      }
+    });
+
+    $("btn_items_refresh").addEventListener("click", refreshKPIs);
+
+    // ===================== EVENTS: GET + POST =====================
+    let lastEvents = [];
+
+    $("btn_events_get").addEventListener("click", async () => {
+      setStatus($("events_status"), "", "Cargando...");
+      try {
+        const r = await api("/events");
+        setStatus($("events_status"), r.ok ? "ok" : "bad", `HTTP ${r.status}`);
+        $("events_json").textContent = pretty(r.data);
+
+        lastEvents = Array.isArray(r.data) ? r.data : [];
+        renderTable($("events_table"), lastEvents, [
+          { key: "id", label: "ID" },
+          { key: "name", label: "Name" },
+          { key: "event_date", label: "Date" },
+          { key: "location", label: "Location" },
+          { key: "notes", label: "Notes" }
+        ], { copyKeys: ["id"] });
+
+        await refreshKPIs();
+      } catch (e) {
+        setStatus($("events_status"), "bad", String(e.message || e));
+        $("events_json").textContent = pretty({ error: String(e.message || e) });
+        $("events_table").innerHTML = "";
+      }
+    });
+
+    $("btn_events_post").addEventListener("click", async () => {
+      setStatus($("event_post_status"), "", "Enviando...");
+      try {
+        const date = $("ev_date").value.trim();
+        const loc = $("ev_loc").value.trim();
+        if (!date) throw new Error("event_date es obligatorio (YYYY-MM-DD)");
+        if (!loc) throw new Error("location es obligatorio");
+
+        const body = {
+          name: $("ev_name").value.trim() || null,
+          event_date: date,
+          location: loc,
+          notes: $("ev_notes").value || null
+        };
+        const r = await api("/events", { method: "POST", body });
+        setStatus($("event_post_status"), r.ok ? "ok" : "bad", `HTTP ${r.status}`);
+        $("btn_events_get").click();
+      } catch (e) {
+        setStatus($("event_post_status"), "bad", String(e.message || e));
+      }
+    });
+
+    // ===================== DISPATCHES: GET + POST (create + return) =====================
+    let lastDispatches = [];
+
+    function flattenEvents(evts) {
+      if (!Array.isArray(evts) || evts.length === 0) return "";
+      // show short: "1:Name | 2:Name"
+      return evts.map(e => `${e.id}:${(e.name || "")}`).join(" | ");
+    }
+
+    $("btn_disp_get").addEventListener("click", async () => {
+      setStatus($("disp_status"), "", "Cargando...");
+      try {
+        const openOnly = $("disp_open_only").value;
+        const r = await api(`/dispatches?open_only=${encodeURIComponent(openOnly)}`);
+        setStatus($("disp_status"), r.ok ? "ok" : "bad", `HTTP ${r.status}`);
+        $("disp_json").textContent = pretty(r.data);
+
+        lastDispatches = Array.isArray(r.data) ? r.data : [];
+        renderTable($("disp_table"), lastDispatches, [
+          { key: "id", label: "Dispatch ID" },
+          { key: "resource_item_id", label: "Item ID" },
+          { key: "dispatched_at", label: "Dispatched at" },
+          { key: "returned_at", label: "Returned at" },
+          { key: "dispatch_note", label: "Dispatch note" },
+          { key: "return_note", label: "Return note" },
+          { key: "events", label: "Events", get: (r) => flattenEvents(r.events) }
+        ], { copyKeys: ["id", "resource_item_id"] });
+
+        await refreshKPIs();
+      } catch (e) {
+        setStatus($("disp_status"), "bad", String(e.message || e));
+        $("disp_json").textContent = pretty({ error: String(e.message || e) });
+        $("disp_table").innerHTML = "";
+      }
+    });
+
+    $("btn_disp_post").addEventListener("click", async () => {
+      setStatus($("disp_post_status"), "", "Enviando...");
+      $("disp_action_out").textContent = "{}";
+      try {
+        const itemId = Number($("d_item_id").value);
+        if (!Number.isFinite(itemId) || itemId <= 0) throw new Error("resource_item_id debe ser número");
+
+        const rawEvents = $("d_event_ids").value.trim();
+        const event_ids = rawEvents
+          ? rawEvents.split(",").map(s => Number(s.trim())).filter(n => Number.isFinite(n) && n > 0)
+          : [];
+
+        const dispatched_at = $("d_dispatched_at").value.trim();
+        const body = {
+          resource_item_id: itemId,
+          event_ids,
+          dispatch_note: $("d_note").value || null
+        };
+        if (dispatched_at) body.dispatched_at = dispatched_at;
+
+        const r = await api("/dispatches", { method: "POST", body });
+        setStatus($("disp_post_status"), r.ok ? "ok" : "bad", `HTTP ${r.status}`);
+        $("disp_action_out").textContent = pretty(r.data);
+
+        // reload list after create
+        $("btn_disp_get").click();
+      } catch (e) {
+        setStatus($("disp_post_status"), "bad", String(e.message || e));
+        $("disp_action_out").textContent = pretty({ error: String(e.message || e) });
+      }
+    });
+
+    $("btn_disp_return").addEventListener("click", async () => {
+      setStatus($("disp_return_status"), "", "Enviando...");
+      $("disp_action_out").textContent = "{}";
+      try {
+        const did = Number($("r_dispatch_id").value);
+        if (!Number.isFinite(did) || did <= 0) throw new Error("dispatch_id debe ser número");
+
+        const returned_at = $("r_returned_at").value.trim();
+        const body = { return_note: $("r_note").value || null };
+        if (returned_at) body.returned_at = returned_at;
+
+        const r = await api(`/dispatches/${did}/return`, { method: "POST", body });
+        setStatus($("disp_return_status"), r.ok ? "ok" : "bad", `HTTP ${r.status}`);
+        $("disp_action_out").textContent = pretty(r.data);
+
+        // reload list after return
+        $("btn_disp_get").click();
+      } catch (e) {
+        setStatus($("disp_return_status"), "bad", String(e.message || e));
+        $("disp_action_out").textContent = pretty({ error: String(e.message || e) });
+      }
+    });
+
+    // Init
+    refreshKPIs();
+  </script>
+</body>
+
+</html>
